@@ -3,7 +3,7 @@ a python script that uses FFMPEG and/or FFMPEG-BAR
 
 dependency: 
 FFMPEG(IMPORTANT)
-FFMPEG-BAR(RECOMMENDED TO MAKE IT LOOK CLEAN)
+FFMPEG-BAR(RECOMMENDED)
 PYTHON3(IMPORTANT)
 
 i designed this script in a rush. I tested it and it went quite well.
