@@ -4,6 +4,7 @@ from os import system, name # clearScreen
 from pathlib import Path
 from os import listdir
 from os.path import isfile, join
+import subprocess
 clearScreenOption = 1
 
 # VIDEO SETTINGS:
@@ -23,7 +24,7 @@ audioBitrate = "320k"
 cwd = os.getcwd() # current working directory, replace os.getcwd() to somewhere you would like
 removeNFO = 1 # removes the original nfo file
 removeOringalFile = 0 # removes the original media file
-useFFMPEGBAR = 0 # uses ffmpeg-bar instead
+useFFMPEGBAR = 1 # uses ffmpeg-bar instead PLEASE HAVE THIS INSTALLED
 illegalChar = ["'", "?", ">", "<"] # characters to remove from file name
 
 
