@@ -1,0 +1,2 @@
+# JellyfinMediaOptimizer
+FFMPEG tool
