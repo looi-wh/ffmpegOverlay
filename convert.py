@@ -9,7 +9,7 @@ clearScreenOption = 1
 
 # VIDEO SETTINGS:
 # note: read ffmpeg for this section
-arrayOfExtentions = [".mkv", ".avi", ".mov", ".mp4" ".wmv", ".flv", ".webm"] # please keep it to an array format
+arrayOfExtentions = [".avi", ".mkv", ".mov", ".mp4", ".wmv", ".flv", ".webm"] # please keep it to an array format
 containerFormat = ".mp4" # one container type only
 codecFormat = "h264" # video format (refrain from using copy)
 audioFormat = "aac" # audio format (refrain from using copy)
@@ -26,6 +26,7 @@ removeNFO = 1 # removes the original nfo file
 removeOringalFile = 0 # removes the original media file
 useFFMPEGBAR = 1 # uses ffmpeg-bar instead PLEASE HAVE THIS INSTALLED
 illegalChar = ["'", "?", ">", "<"] # characters to remove from file name
+extraCommands = ""
 
 
 def clearScreen(): # for screen clearing. can be disabled using clearScreenOption
@@ -51,13 +52,21 @@ def filterContent(arrayOfNames, workingDir):
 				if extension in file:
 					files.append(os.path.join(r, file))
 		filtered.append(list(filter(lambda k: extension in k, files)))
-	return filtered
+		combinedFiltered = combineArray(filtered)
+	return combinedFiltered
 
 def renameFiles(arrayOfTargets):
 	for x in arrayOfTargets:
-		targetFiles = filterContent(arrayOfExtentions, cwd)[0]
+		targetFiles = filterContent(arrayOfExtentions, cwd)
 		for y in targetFiles:
 			os.rename(y, y.replace(x, ""))
+
+def combineArray(input):
+	combine = []
+	for x in input:
+		for y in x:
+			combine.append(y)
+	return combine
 
 clearScreen()
 # declare to user
@@ -75,7 +84,7 @@ print("[SETTINGS] audioBitrate:", videoBitrate)
 fileCount = 0
 # rename files
 renameFiles(illegalChar)
-targetFiles = filterContent(arrayOfExtentions, cwd)[0]
+targetFiles = filterContent(arrayOfExtentions, cwd)
 for x in targetFiles:
 	print("[FILES] found", x)
 	fileCount += 1
@@ -101,30 +110,29 @@ for target in targetFiles:
 			if not target.count(codecs) == 0:
 				output =  target.replace(codecs, containerFormat)
 				deleteNFO = target.replace(codecs, ".nfo")
-			if useFFMPEGBAR == 1:
-				command = "ffmpeg-bar -i '" + target + "' " + "-c:v " + tempcodecFormat + " -c:a " + tempaudioFormat + " -preset " + preset +" -y -b:v " + videoBitrate +" -b:a " + audioBitrate + " '" + output + "'"
-			else:
-				clearScreen()
-				print("[CONVERTING] working on", target)
-				print("[CONVERTING] output to", output)
-				print("[CONVERTING] file", doneCount+1, "of", fileCount)
-				print("[CONVERTING] please wait, script might look non-responsive for large file")
-				command = "ffmpeg -i '" + target + "' " + "-c:v " + tempcodecFormat + " -c:a " + tempaudioFormat + " -preset " + preset +" -y -b:v " + videoBitrate +" -b:a " + audioBitrate + " '" + output + "' 2> /dev/null"
-			os.system(command) # run command into system
-			doneCount += 1
-			print("[COMPLETED]", doneCount, "of", fileCount)
-			if os.path.exists(output):
-				if str(containerFormat) in str(target): 
-					print("ignoring delete for", output) # if output format = input format, do not delete output file
+				if useFFMPEGBAR == 1:
+					command = "ffmpeg-bar -i '" + target + "' " + "-c:v " + tempcodecFormat + " " + extraCommands + " -c:a " + tempaudioFormat + " -preset " + preset +" -y -b:v " + videoBitrate +" -b:a " + audioBitrate + " '" + output + "'"
 				else:
-					if removeOringalFile == 1:
-						if os.path.exists(target):
-							os.remove(target) # removes original file
-					if os.path.exists(deleteNFO):
-						if removeNFO == 1:
-							os.remove(deleteNFO) # deletes the nfo file
+					clearScreen()
+					print("[CONVERTING] working on", target)
+					print("[CONVERTING] output to", output)
+					print("[CONVERTING] file", doneCount+1, "of", fileCount)
+					print("[CONVERTING] please wait, script might look non-responsive for large file")
+					command = "ffmpeg -i '" + target + "' " + "-c:v " + tempcodecFormat + " " + extraCommands + " -c:a " + tempaudioFormat + " -preset " + preset +" -y -b:v " + videoBitrate +" -b:a " + audioBitrate + " '" + output + "' 2> /dev/null"
+				os.system(command) # run command into system
+				if os.path.exists(output):
+					if str(containerFormat) in str(target): 
+						print("ignoring delete for", output) # if output format = input format, do not delete output file
+					else:
+						if removeOringalFile == 1:
+							if os.path.exists(target):
+								os.remove(target) # removes original file
+						if os.path.exists(deleteNFO):
+							if removeNFO == 1:
+								os.remove(deleteNFO) # deletes the nfo file
+	doneCount += 1
 
-targetFiles = filterContent(arrayOfExtentions, cwd)[0]
+targetFiles = filterContent(arrayOfExtentions, cwd)
 clearScreen()
 for x in targetFiles:
 	print("[finished] found", x)
