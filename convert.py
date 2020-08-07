@@ -14,8 +14,8 @@ containerFormat = ".mp4" # one container type only
 codecFormat = "h264" # video format (refrain from using copy)
 audioFormat = "aac" # audio format (refrain from using copy)
 preset = "veryfast"
-videoBitrate = "2M"
-audioBitrate = "320k"
+videoBitrate = "5M"
+audioBitrate = "192k"
 # END OF SETTINGS
 
 # ADVANCED SETTINGS:
@@ -25,8 +25,9 @@ cwd = os.getcwd() # current working directory, replace os.getcwd() to somewhere 
 removeNFO = 1 # removes the original nfo file
 removeOringalFile = 0 # removes the original media file
 useFFMPEGBAR = 1 # uses ffmpeg-bar instead PLEASE HAVE THIS INSTALLED
-illegalChar = ["'", "?", ">", "<"] # characters to remove from file name
-extraCommands = ""
+illegalChar = ["'", '"'] # characters to remove from file name
+extraCommands = "-map 0:0 -map 0:a -map '0:s?' -crf 20 -c:s mov_text " # important stuff
+# 				^ maps video, audio(all) and subtitles(all - if it exists). quality = 20 (higher than average). subititle = mov_test
 
 
 def clearScreen(): # for screen clearing. can be disabled using clearScreenOption
@@ -93,28 +94,33 @@ input("[READY] Press Enter to accept and start job...")
 doneCount = 0
 # start converting
 for target in targetFiles:
+	clearScreen()
 	tempcodecFormat = codecFormat
 	tempaudioFormat = audioFormat
 	for codecs in arrayOfExtentions:
-		# check video codec:
-		commandCheckVideo = "ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 '" + target +"'"
-		commandCheckAudio = "ffprobe -v error -select_streams a:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 '" + target +"'"
-		skip = 0
-		if subprocess.check_output(commandCheckVideo, shell=True) == codecFormat:
-			skip += 1
-			tempcodecFormat = "copy"
-		if subprocess.check_output(commandCheckAudio, shell=True) == audioFormat:
-			skip += 1
-			tempaudioFormat = "copy"
-		if not skip == 2: #skip if all four passes
-			if not target.count(codecs) == 0:
+		if not target.count(codecs) == 0:
+			# check video codec:
+			commandCheckVideo = "ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 '" + target +"'"
+			commandCheckAudio = "ffprobe -v error -select_streams a:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 '" + target +"'"
+			commandCheckSub = "ffmpeg -i '" + target + "' -c copy -map 0:s -f null - -v 0 -hide_banner && echo $? || echo $?"
+			commandCheckStreams = "ffprobe '" + target + "' -show_entries format=nb_streams -v 0 -of compact=p=0:nk=1"
+			skip = 0
+			if subprocess.check_output(commandCheckVideo, shell=True) == codecFormat:
+				skip += 1
+				tempcodecFormat = "copy"
+			if subprocess.check_output(commandCheckAudio, shell=True) == audioFormat:
+				skip += 1
+				tempaudioFormat = "copy"
+			if not skip == 2: #skip if all four passes
 				output =  target.replace(codecs, containerFormat)
 				deleteNFO = target.replace(codecs, ".nfo")
 				if useFFMPEGBAR == 1:
+					print("[CONVERTING] working on", target, "using ffmpeg-bar")
+					print("[CONVERTING] output to", output)
+					print("[CONVERTING] file", doneCount+1, "of", fileCount)
 					command = "ffmpeg-bar -i '" + target + "' " + "-c:v " + tempcodecFormat + " " + extraCommands + " -c:a " + tempaudioFormat + " -preset " + preset +" -y -b:v " + videoBitrate +" -b:a " + audioBitrate + " '" + output + "'"
 				else:
-					clearScreen()
-					print("[CONVERTING] working on", target)
+					print("[CONVERTING] working on", target, "using ffmpeg only")
 					print("[CONVERTING] output to", output)
 					print("[CONVERTING] file", doneCount+1, "of", fileCount)
 					print("[CONVERTING] please wait, script might look non-responsive for large file")
