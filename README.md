@@ -2,12 +2,13 @@
 Designed to help convert large amount of media easily
 
 # How to run
-- Install ffmpeg (required), ffprobe (required) and ffmpeg-bar (recommended)
 - Download file from release section
 - Extract and run "python3 convert.py" (no need for sudo)
+- The script will automatically install everything thats needed
 
 # Features
 - Supports FFMPEG-BAR
+- Script able to magically install everything
 - Able to find any media file recursively
 - Able to survive even when a single file fails
 - Auto skip media if input codec is the same as the requested codec
