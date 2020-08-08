@@ -1,11 +1,14 @@
 import platform
 import os
+import platform
 from os import system, name # clearScreen
 from pathlib import Path
 from os import listdir
 from os.path import isfile, join
 import subprocess
 clearScreenOption = 1
+
+
 
 # VIDEO SETTINGS:
 # note: read ffmpeg for this section
@@ -24,16 +27,14 @@ audioBitrate = "320k" # default: 192k (normal quality, change to 320k for highes
 # note: 1 for enable, 0 for disable
 #		this settings is more for jellyfin only
 cwd = os.getcwd() # current working directory, replace os.getcwd() to somewhere you would like
-removeNFO = 0 # removes the original nfo file
+removeNFO = 1 # removes the original nfo file
 removeOringalFile = 0 # removes the original media file
 showFiles = 1 # display the files before startings
-useFFMPEGBAR = 0 # uses ffmpeg-bar instead PLEASE HAVE THIS INSTALLED
+useFFMPEGBAR = 1 # uses ffmpeg-bar instead PLEASE HAVE THIS INSTALLED
 illegalChar = ["'", '"'] # characters to remove from file name
 extraCommands = "-map 0:0 -map 0:a -map '0:s?' -crf 20 -c:s mov_text" # important stuff
 # 				^ maps video, audio(all) and subtitles(all - if it exists). quality = 20 (higher than average). subititle = mov_test
 
-
-# functions (some i created a long time ago)
 def clearScreen(): # for screen clearing. can be disabled using clearScreenOption
 	# version 3: optimized with better automation
 	global clearScreenOption
@@ -46,6 +47,40 @@ def clearScreen(): # for screen clearing. can be disabled using clearScreenOptio
 		if not fault == 0:
 			clearScreenOption = 0 #disabling it just in case of any further use
 	return fault
+
+# auto install required tools
+clearScreen()
+if not "ffprobe" in str(subprocess.check_output("pip3 list", shell=True)):
+	print("[PREPARE] ffprobe not found, proceeding to install..")
+	subprocess.check_output("pip3 install ffprobe", shell=True)
+if not "ffmpeg-bitrate-stats" in str(subprocess.check_output("pip3 list", shell=True)):
+	print("[PREPARE] ffmpeg-bitrate-stats not found, proceeding to install..")
+	subprocess.check_output("pip3 install ffmpeg-bitrate-stats", shell=True)
+if not "FFmpeg developers" in str(subprocess.check_output("ffmpeg -version", shell=True)):
+	print("[PREPARE] ffmpeg not found, proceeding to install..")
+	if platform.system() == Windows:
+		print("[FATAL] please install ffmpeg yourself")
+		exit()
+	if not "Example usage:" in str(subprocess.check_output("brew", shell=True)):
+		print("[PREPARE] cannot find Homebrew!")
+		print("[PREPARE] script will require you to install Homebrew first")
+		print("[PREPARE] Homebrew might ask for your password!")
+		input("[PREPARE] Press Enter to accept and install")
+		os.system("/bin/bash -c '$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh'")
+	print("[PREPARE] Homebrew found, installing ffmpeg..")
+	os.system("brew install nasm pkg-config texi2html aom fontconfig freetype frei0r gnutls lame libass libbluray libsoxr libvorbis libvpx opencore-amr openjpeg opus rtmpdump rubberband sdl2 snappy speex tesseract theora x264 x265 xvid xz ffmpeg")
+if not "ffmpeg-progressbar-cli" in str(subprocess.check_output("npm list -g", shell=True)):
+	print("[PREPARE] ffmpeg-bar not found, proceeding to install..")
+	if not "Usage: npm <command>" in str(subprocess.check_output("npm", shell=True)):
+		print("[PREPARE] installing npm using Homebrew..")
+		os.system("brew install node")
+	print("[PREPARE] npm found, installing ffmpeg-bar")
+	os.system("sudo npm install --global ffmpeg-progressbar-cli")
+
+
+
+
+# functions (some i created a long time ago)
 
 def filterContent(arrayOfNames, workingDir):
 	filtered = []
@@ -78,7 +113,6 @@ def combineArray(input):
 # end of functions
 
 # start of main
-clearScreen()
 # declare to user
 print("[SETTINGS] looking at", str(cwd))
 print("[SETTINGS] formats to detect:")
@@ -104,7 +138,12 @@ if fileCount == 0:
 	print("[WARNING] try checking file premission and the working directory in the script")
 	print("[WARNING] maybe format detect doesnt include the extension you want")
 else:
-	input("[READY] Press Enter to accept and start job...") # wait for user permission to start. crtl + c will not do anything at this point
+	try:
+		input("[READY] Press Enter to accept and start job...") # wait for user permission to start. crtl + c will not do anything at this point
+	except:
+		print("")
+		print("[CANCELLED] you declined")
+		exit()
 doneCount = 0
 # start converting
 for target in targetFiles:
@@ -121,6 +160,7 @@ for target in targetFiles:
 			commandCheckAudio = "ffprobe -v error -select_streams a:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 '" + target +"'"
 			commandCheckSub = "ffmpeg -i '" + target + "' -c copy -map 0:s -f null - -v 0 -hide_banner && echo $? || echo $?"
 			commandCheckStreams = "ffprobe '" + target + "' -show_entries format=nb_streams -v 0 -of compact=p=0:nk=1"
+			commandCheckBitrate = "ffmpeg -i in.mp4 -map 0:v -c copy -f segment -segment_time 1 -break_non_keyframes 1 folder seg%d.264"
 			skip = 0
 			if codecFormat in str(subprocess.check_output(commandCheckVideo, shell=True)): # copy if matches for faster transcoding
 				skip += 1
@@ -144,7 +184,7 @@ for target in targetFiles:
 				else:
 					print("[CONVERTING] using ffmpeg only")
 					print("[CONVERTING] please wait, script might look non-responsive for large file")
-					command = "ffmpeg -i '" + target + "' " + "-c:v " + tempcodecFormat + " " + extraCommands + " -c:a " + tempaudioFormat + " -preset " + preset +" -y -b:v " + videoBitrate +" -b:a " + audioBitrate + " '" + output + "' 2> /dev/null"
+					command = "ffmpeg -i '" + target + "' " + "-c:v " + tempcodecFormat + " " + extraCommands + " -c:a " + tempaudioFormat + " -preset " + preset +" -y -b:v " + videoBitrate +" -b:a " + audioBitrate + " '" + output + "' -loglevel 8"
 				os.system(command) # run command into system
 				if os.path.exists(output): # checks for output file first
 					if str(containerFormat) in str(target): 
