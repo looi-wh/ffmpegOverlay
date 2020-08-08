@@ -15,6 +15,7 @@ Designed to help convert large amount of media easily
 - Able to create an output file even when input file name is the same as output
 - Capable of running long term (tested 30 days)
 - Able to delete NFO file (made solely for jellyfin - can be ignored)
+- Default commands is able to support multiple audio streams and subtitles
 
 # Upcoming planned features
 - Able to survive even when a single file fails
