@@ -1,4 +1,4 @@
-# FFMPEG tool
+# ffmpegOverly
 designed to help convert large amount of media easily
 
 # how to run
@@ -28,5 +28,6 @@ designed to help convert large amount of media easily
 - Before starting conversion, script will ask you to press the enter key to start
 - And lastly, if there are any issues, please send it to the issue or contact me instead
 
+# Screenshot(s)
 example of ffmpegOverlay using ffmpeg-bar
 ![work](screenshot.png)
