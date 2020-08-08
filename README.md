@@ -9,6 +9,7 @@ Designed to help convert large amount of media easily
 # Features
 - Supports FFMPEG-BAR
 - Able to find any media file recursively
+- Able to survive even when a single file fails
 - Auto skip media if input codec is the same as the requested codec
 - Auto delete input file when output file is created (can be disabled in settings)
 - Auto delete original file after creating an output file
@@ -18,7 +19,6 @@ Designed to help convert large amount of media easily
 - Default commands is able to support multiple audio streams and subtitles
 
 # Upcoming planned features
-- Able to survive even when a single file fails
 - Use GPU whenever possible
 - Able to save original media to a backup location
 - Feel free to suggest any features
