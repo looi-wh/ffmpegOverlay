@@ -1,7 +1,7 @@
 # ffmpegOverly
 designed to help convert large amount of media easily
 
-# how to run
+# How to run
 - download file from release section
 - extract and run "python3 convert.py"
 
