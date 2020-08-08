@@ -1,10 +1,10 @@
 # ffmpegOverly
-designed to help convert large amount of media easily
+Designed to help convert large amount of media easily
 
 # How to run
-- Install ffmpeg(required), ffprobe(required) and ffmpeg-bar (recommended)
+- Install ffmpeg (required), ffprobe (required) and ffmpeg-bar (recommended)
 - Download file from release section
-- Extract and run "python3 convert.py"
+- Extract and run "python3 convert.py" (no need for sudo)
 
 # Features
 - Supports FFMPEG-BAR
@@ -24,6 +24,7 @@ designed to help convert large amount of media easily
 
 # Notes
 - Edit and find the section for the settings first (make sure its what you want)
+- Please ensure read and write permission is done properly
 - V9 and H265 conversion is not recommended as it takes too long to convert
 - The default settings is optimized for video streaming
 - Before starting conversion, script will ask you to press the enter key to start
