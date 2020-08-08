@@ -17,7 +17,7 @@ designed to help convert large amount of media easily
 
 # Upcoming planned features
 - Able to survive even when a single file fails
-- GPU acceleration support (VAAPI)
+- Use GPU whenever possible
 - Able to save original media to a backup location
 - Feel free to suggest any features
 
