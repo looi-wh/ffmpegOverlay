@@ -174,11 +174,13 @@ for x in targetFiles:
 	if codecFormat in str(subprocess.check_output(commandCheckVideo, shell=True)) and audioFormat in str(subprocess.check_output(commandCheckAudio, shell=True)) and str(containerFormat) in str(x):
 		successCount += 1
 	else:
-		print("[FAILED]", x)
-		failCount += 1
+		if removeOringalFile == 1:
+			print("[FAILED]", x)
+			failCount += 1
 if not fileCount == 0:
 	print("[RESULT]", successCount, "file(s) verified")
-	print("[RESULT]", failCount, "file(s) failed")
+	if removeOringalFile == 1:
+		print("[RESULT]", failCount, "file(s) failed")
 	print("[RESULT]", doneCount, "file(s) processed")
 print("[END] job done")
 
