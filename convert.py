@@ -24,10 +24,10 @@ audioBitrate = "320k" # default: 192k (normal quality, change to 320k for highes
 # note: 1 for enable, 0 for disable
 #		this settings is more for jellyfin only
 cwd = os.getcwd() # current working directory, replace os.getcwd() to somewhere you would like
-removeNFO = 1 # removes the original nfo file
+removeNFO = 0 # removes the original nfo file
 removeOringalFile = 0 # removes the original media file
 showFiles = 1 # display the files before startings
-useFFMPEGBAR = 1 # uses ffmpeg-bar instead PLEASE HAVE THIS INSTALLED
+useFFMPEGBAR = 0 # uses ffmpeg-bar instead PLEASE HAVE THIS INSTALLED
 illegalChar = ["'", '"'] # characters to remove from file name
 extraCommands = "-map 0:0 -map 0:a -map '0:s?' -crf 20 -c:s mov_text" # important stuff
 # 				^ maps video, audio(all) and subtitles(all - if it exists). quality = 20 (higher than average). subititle = mov_test
@@ -172,10 +172,9 @@ for x in targetFiles:
 	commandCheckAudio = "ffprobe -v error -select_streams a:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 '" + x +"'"
 	commandCheckSub = "ffmpeg -i '" + x + "' -c copy -map 0:s -f null - -v 0 -hide_banner && echo $? || echo $?"
 	if codecFormat in str(subprocess.check_output(commandCheckVideo, shell=True)) and audioFormat in str(subprocess.check_output(commandCheckAudio, shell=True)) and str(containerFormat) in str(x):
-		print("[SUCCESS] verified", x)
 		successCount += 1
 	else:
-		print("[FAILED] did not passed", x)
+		print("[FAILED]", x)
 		failCount += 1
 if not fileCount == 0:
 	print("[RESULT]", successCount, "file(s) verified")
