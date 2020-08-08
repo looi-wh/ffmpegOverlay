@@ -1,4 +1,4 @@
-# ffmpegOverly
+# ffmpegOverlay
 Designed to help convert large amount of media easily
 
 # How to run
