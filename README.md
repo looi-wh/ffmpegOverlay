@@ -8,7 +8,6 @@ Designed to help convert large amount of media easily
 
 # Features
 - Supports FFMPEG-BAR
-- Script able to magically install everything
 - Able to find any media file recursively
 - Able to survive even when a single file fails
 - Auto skip media if input codec is the same as the requested codec
@@ -28,6 +27,7 @@ Designed to help convert large amount of media easily
 - Edit and find the section for the settings first (make sure its what you want)
 - Please ensure read and write permission is done properly
 - V9 and H265 conversion is not recommended as it takes too long to convert
+- Containers other than mp4, mov and mkv might have buggy subtitles that doesnt work
 - The default settings is optimized for video streaming
 - Before starting conversion, script will ask you to press the enter key to start
 - And lastly, if there are any issues, please send it to the issue or contact me instead
