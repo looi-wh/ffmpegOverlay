@@ -15,7 +15,7 @@ clearScreenOption = 1
 arrayOfExtentions = [".avi", ".mkv", ".mov", ".mp4", ".wmv", ".flv", ".webm"] # please keep it to an array format
 #											^ note: if video is already processed/meets requirements, script will ignore
 #													"requirements" is video, audio and container matches requested
-containerFormat = ".mp4" # one container type only
+containerFormat = ".mp4" # file extension (rmb to put the dot)
 codecFormat = "h264" # video format (refrain from using copy)
 audioFormat = "aac" # audio format (refrain from using copy)
 preset = "veryfast" # default: veryfast (a balance between quality and speed)
@@ -32,8 +32,8 @@ removeOringalFile = 0 # removes the original media file
 showFiles = 1 # display the files before startings
 useFFMPEGBAR = 1 # uses ffmpeg-bar instead PLEASE HAVE THIS INSTALLED
 illegalChar = ["'", '"'] # characters to remove from file name
-extraCommands = "-map 0:0 -map 0:a -map '0:s?' -crf 20 -c:s mov_text" # important stuff
-# 				^ maps video, audio(all) and subtitles(all - if it exists). quality = 20 (higher than average). subititle = mov_test
+extraCommands = "-map 0:0 -map 0:a -crf 20" # important stuff
+# 				^ maps video, audio(all) and subtitles(all - if it exists). quality = 20 (higher than average)
 
 def clearScreen(): # for screen clearing. can be disabled using clearScreenOption
 	# version 3: optimized with better automation
@@ -50,6 +50,7 @@ def clearScreen(): # for screen clearing. can be disabled using clearScreenOptio
 
 # auto install required tools
 clearScreen()
+print("[PREPARE] checking installation, please wait..")
 if not "ffprobe" in str(subprocess.check_output("pip3 list", shell=True)):
 	print("[PREPARE] ffprobe not found, proceeding to install..")
 	subprocess.check_output("pip3 install ffprobe", shell=True)
@@ -59,7 +60,7 @@ if not "ffmpeg-bitrate-stats" in str(subprocess.check_output("pip3 list", shell=
 if not "FFmpeg developers" in str(subprocess.check_output("ffmpeg -version", shell=True)):
 	print("[PREPARE] ffmpeg not found, proceeding to install..")
 	if platform.system() == Windows:
-		print("[FATAL] please install ffmpeg yourself")
+		print("[FATAL] windows support coming soon")
 		exit()
 	if not "Example usage:" in str(subprocess.check_output("brew", shell=True)):
 		print("[PREPARE] cannot find Homebrew!")
@@ -76,6 +77,7 @@ if not "ffmpeg-progressbar-cli" in str(subprocess.check_output("npm list -g", sh
 		os.system("brew install node")
 	print("[PREPARE] npm found, installing ffmpeg-bar")
 	os.system("sudo npm install --global ffmpeg-progressbar-cli")
+print("[PREPARE] done")
 
 
 
@@ -110,6 +112,18 @@ def combineArray(input):
 		for y in x:
 			combine.append(y)
 	return combine
+
+def autoSubCodec(inputx, containerFormat):
+	global extraCommands
+	if containerFormat in inputx:
+		extraCommands = extraCommands + " -map '0:s?' -c:s copy "
+	if containerFormat == ".mp4" or containerFormat == ".mov":
+		extraCommands = extraCommands + " -map '0:s?' -c:s mov_text "
+	elif containerFormat == ".mkv":
+		extraCommands = extraCommands + " -map '0:s?' -c:s srt "
+	else:
+		extraCommands = extraCommands + " -map '0:s?' -c:s copy " # copy as last resort
+
 # end of functions
 
 # start of main
@@ -171,6 +185,7 @@ for target in targetFiles:
 			if str(containerFormat) in str(target): # if video and audio matches except for container, script will only ask for remux
 				skip += 1
 			if not skip == 3: #skip if all four passes
+				autoSubCodec(targetZero, containerFormat)
 				output =  targetZero.replace(codecs, containerFormat) # output filename and container
 				deleteNFO = targetZero.replace(codecs, ".nfo") # jellyfin nfo reset (just in case the file was renamed due to illegal char. its easier to ask jellyfin to process again)
 				print("[CONVERTING] working on", targetZero)
