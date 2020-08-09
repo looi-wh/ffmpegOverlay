@@ -4,7 +4,7 @@ Designed to help convert large amount of media easily
 # How to run
 - Download file from release section
 - Extract and run "python3 convert.py" (no need for sudo)
-- The script will automatically install everything thats needed
+- The script will automatically install everything required
 
 # Features
 - Supports FFMPEG-BAR
