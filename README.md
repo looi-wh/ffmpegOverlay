@@ -1,10 +1,35 @@
 # ffmpegOverlay
 Designed to help convert large amount of media easily
 
+# Installing on Ubuntu/Debian
+```
+sudo apt-get update
+```
+```
+sudo apt install -y ffmpeg mediainfo nodejs npm
+```
+```
+sudo npm install --global ffmpeg-progressbar-cli
+```
+
+# Installing on Mac
+```
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+```
+```
+brew install ffmpeg
+```
+```
+brew install node
+```
+```
+sudo npm install --global ffmpeg-progressbar-cli
+```
+
 # How to run
+- Install ffmpeg-progressbar-cli, ffmpeg and media-info
 - Download file from release section
 - Extract and run "python3 convert.py" (no need for sudo)
-- The script will automatically install everything required
 
 # Features
 - Supports FFMPEG-BAR
