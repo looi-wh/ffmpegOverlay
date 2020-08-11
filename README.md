@@ -62,6 +62,7 @@ libva info: va_openDriver() returns 0
 - Change it to useGPU = 1
 - Audio and Subtitles will automatically be transconded
 - Script will process twice; once to transcode video using gpu, another to transcode audio with cpu
+- Script will only try to process video only for gpu transcoding
 - Unless you know what you are doing, try using only the default values
 
 # Features
