@@ -2,26 +2,29 @@
 Designed to help convert large amount of media easily
 
 # Installing on Ubuntu/Debian
+Apt update
 ```
 sudo apt-get update
 ```
+Install ffmpeg, mediainfo, nodejs and npm
 ```
 sudo apt install -y ffmpeg mediainfo nodejs npm
 ```
+Install ffmpeg-bar
 ```
 sudo npm install --global ffmpeg-progressbar-cli
 ```
 
 # Installing on Mac
+Install Homebrew (to make install easier)
 ```
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 ```
+Install ffmpeg and node
 ```
-brew install ffmpeg
+brew install ffmpeg node
 ```
-```
-brew install node
-```
+Install ffmpeg-bar
 ```
 sudo npm install --global ffmpeg-progressbar-cli
 ```
