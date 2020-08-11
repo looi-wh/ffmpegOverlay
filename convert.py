@@ -6,6 +6,8 @@ from pathlib import Path
 from os import listdir
 from os.path import isfile, join
 import subprocess
+import shutil
+import re
 clearScreenOption = 1
 
 
@@ -18,9 +20,9 @@ arrayOfExtentions = [".avi", ".mkv", ".mov", ".mp4", ".wmv", ".flv", ".webm"] # 
 containerFormat = ".mp4" # file extension (rmb to put the dot)
 codecFormat = "h264" # video format (refrain from using copy)
 audioFormat = "aac" # audio format (refrain from using copy)
-preset = "veryfast" # default: veryfast (a balance between quality and speed)
-videoBitrate = "5M" # default: 5M (can be viewed as mbps)
-audioBitrate = "320k" # default: 192k (normal quality, change to 320k for highest)
+preset = "veryfast" # recommended: veryfast (a balance between quality and speed)
+videoBitrate = "8M" # recommended: 8M (can be viewed as mbps)
+audioBitrate = "320k" # recommended: 192k (normal quality, change to 320k for highest)
 # END OF SETTINGS
 
 # ADVANCED SETTINGS:
@@ -32,8 +34,11 @@ removeOringalFile = 0 # removes the original media file
 showFiles = 1 # display the files before startings
 useFFMPEGBAR = 1 # uses ffmpeg-bar instead PLEASE HAVE THIS INSTALLED
 illegalChar = ["'", '"'] # characters to remove from file name
-extraCommands = "-map 0:0 -map 0:a -crf 20" # important stuff
-# 				^ maps video, audio(all) and subtitles(all - if it exists). quality = 20 (higher than average)
+useGPU = 0  # currently only vaapi support is written
+render = "-hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -hwaccel_output_format vaapi"
+gpucommand = "-an -sn" # can ignore if u not using
+extraCommands = "-map 0:v:0 -map 0:a" # important stuff
+# 				^ maps video and audio(all). quality = 20 (higher than average)
 
 def clearScreen(): # for screen clearing. can be disabled using clearScreenOption
 	# version 3: optimized with better automation
@@ -47,38 +52,6 @@ def clearScreen(): # for screen clearing. can be disabled using clearScreenOptio
 		if not fault == 0:
 			clearScreenOption = 0 #disabling it just in case of any further use
 	return fault
-
-# auto install required tools
-clearScreen()
-print("[PREPARE] checking installation, please wait..")
-if not "ffprobe" in str(subprocess.check_output("pip3 list", shell=True)):
-	print("[PREPARE] ffprobe not found, proceeding to install..")
-	subprocess.check_output("pip3 install ffprobe", shell=True)
-if not "ffmpeg-bitrate-stats" in str(subprocess.check_output("pip3 list", shell=True)):
-	print("[PREPARE] ffmpeg-bitrate-stats not found, proceeding to install..")
-	subprocess.check_output("pip3 install ffmpeg-bitrate-stats", shell=True)
-if not "FFmpeg developers" in str(subprocess.check_output("ffmpeg -version", shell=True)):
-	print("[PREPARE] ffmpeg not found, proceeding to install..")
-	if platform.system() == Windows:
-		print("[FATAL] windows support coming soon")
-		exit()
-	if not "Example usage:" in str(subprocess.check_output("brew", shell=True)):
-		print("[PREPARE] cannot find Homebrew!")
-		print("[PREPARE] script will require you to install Homebrew first")
-		print("[PREPARE] Homebrew might ask for your password!")
-		input("[PREPARE] Press Enter to accept and install")
-		os.system("/bin/bash -c '$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh'")
-	print("[PREPARE] Homebrew found, installing ffmpeg..")
-	os.system("brew install nasm pkg-config texi2html aom fontconfig freetype frei0r gnutls lame libass libbluray libsoxr libvorbis libvpx opencore-amr openjpeg opus rtmpdump rubberband sdl2 snappy speex tesseract theora x264 x265 xvid xz ffmpeg")
-if not "ffmpeg-progressbar-cli" in str(subprocess.check_output("npm list -g", shell=True)):
-	print("[PREPARE] ffmpeg-bar not found, proceeding to install..")
-	if not "Usage: npm <command>" in str(subprocess.check_output("npm", shell=True)):
-		print("[PREPARE] installing npm using Homebrew..")
-		os.system("brew install node")
-	print("[PREPARE] npm found, installing ffmpeg-bar")
-	os.system("sudo npm install --global ffmpeg-progressbar-cli")
-print("[PREPARE] done")
-
 
 
 
@@ -124,10 +97,66 @@ def autoSubCodec(inputx, containerFormat):
 	else:
 		extraCommands = extraCommands + " -map '0:s?' -c:s copy " # copy as last resort
 
+def filterArray(inputx, arrayOfList):
+	inputTemp = str(inputx).replace("\n", "")
+	for x in arrayOfList:
+		inputTemp = inputTemp.replace(x, "")
+	return inputTemp
+
+def checkMediaHealth(file):
+	return int(subprocess.check_output("ffprobe '" + file + "' > /dev/null 2>&1; echo $?", shell=True))
+
+def runFFMPEG(inputx, vcodec, acodec, vbit, abit, outputx, extraCommands, bar, gpu):
+	global preset, gpucommand, render, containerFormat
+	if bar == 1:
+		mainCommandx = "ffmpeg-bar"
+	else:
+		mainCommandx = "ffmpeg"
+		extraCommands = extraCommands + " -loglevel fatal"
+	if vcodec == "copy":
+		vcodecGPU = 0
+	else:
+		vcodecGPU = 1
+	if gpu == 1 and vcodecGPU == 1:  # run with gpu
+		# How this GPU transcoding works
+		# this script takes the input file and create an output with only video
+		# then takes the input file and merge with the created video file
+		mainCommand = mainCommandx + " " + render
+		outputVid = outputx.replace(containerFormat, "_INPUT" + containerFormat)
+		inputxVid = outputVid
+		vcodecx = "vcodec" + "_vaapi"
+		print("[INFO] processing video first with GPU")
+		commandv = mainCommand + " -i '" + inputx + "' " + gpucommand + " -c:v " + vcodecx + " -y -b:v " + vbit + " '" + outputVid + "' "
+		os.system(commandv) # creates a file without audio and subtitles
+		if not os.path.exists(outputVid):
+			print("[FATAL - GPU] video output not created")
+			print(commandv)
+			exit()
+		if "-map 0:a" in extraCommands:
+			extraCommands = extraCommands.replace("-map 0:a", "-map 1:a")
+		else:
+			print("[WARNING - GPU] unable to find -map 0:a in extraCommands! adding it..")
+			extraCommands = extraCommands + " -map 1:a"
+		commandx = mainCommandx + " -i '" + inputxVid + "' -i '" + inputx + "' " + extraCommands + " -c copy '" + outputx + "'"
+		print("")
+		print("[INFO] processing audio and subtitles without GPU")
+		os.system(commandx) # merge original audio with created video
+		if not os.path.exists(ouputx):
+			print("[FATAL - GPU] final output not created, unable to merge audio with video")
+			print(commandx)
+			exit()
+		else:
+			os.remove(outputVid)
+	else:
+		mainCommand = mainCommandx + " -i '" + inputx + "' -preset: " + preset + " -c:v " + vcodec + " -c:a " + acodec + " -y -b:v " + vbit + " -b:a " + abit + " " + extraCommands + " '" + output + "' "
+		os.system(mainCommand)
+
+
 # end of functions
 
 # start of main
 # declare to user
+clearScreen()
 print("[SETTINGS] looking at", str(cwd))
 print("[SETTINGS] formats to detect:")
 for x in arrayOfExtentions:
@@ -160,6 +189,9 @@ else:
 		exit()
 doneCount = 0
 # start converting
+checkMediaFailed = 0
+listOfOutput = []
+listOfExpectedSize = []
 for target in targetFiles:
 	targetZero = target
 	tempcodecFormat = codecFormat
@@ -184,36 +216,44 @@ for target in targetFiles:
 				tempaudioFormat = "copy"
 			if str(containerFormat) in str(target): # if video and audio matches except for container, script will only ask for remux
 				skip += 1
+			if checkMediaHealth(target) == 1:
+				print("[WARNING] media", targetZero, "failed, skipping..")
+				skip = 3
 			if not skip == 3: #skip if all four passes
+				print("")
 				autoSubCodec(targetZero, containerFormat)
 				output =  targetZero.replace(codecs, containerFormat) # output filename and container
 				deleteNFO = targetZero.replace(codecs, ".nfo") # jellyfin nfo reset (just in case the file was renamed due to illegal char. its easier to ask jellyfin to process again)
 				print("[CONVERTING] working on", targetZero)
 				print("[CONVERTING] output to", output)
 				print("[CONVERTING] processing file", doneCount+1, "of", fileCount)
-				print("[DETAILS] original video codec:", subprocess.check_output(commandCheckVideo, shell=True))
-				print("[DETAILS] original audio codec:", subprocess.check_output(commandCheckAudio, shell=True))
-				if useFFMPEGBAR == 1: # recommended cause of ETA and progress bar
-					print("[CONVERTING] using ffmpeg-bar")
-					command = "ffmpeg-bar -i '" + target + "' " + "-c:v " + tempcodecFormat + " " + extraCommands + " -c:a " + tempaudioFormat + " -preset " + preset +" -y -b:v " + videoBitrate +" -b:a " + audioBitrate + " '" + output + "'"
+				print("[DETAILS] original video codec:", filterArray(subprocess.check_output(commandCheckVideo, shell=True), ["b'", "'", "n"]))
+				print("[DEBUG] tempcodecFormat (video):", tempcodecFormat)
+				print("[DEBUG] tempaudioFormat (audio):", tempaudioFormat)
+				print("[DETAILS] original audio codec:", filterArray(subprocess.check_output(commandCheckAudio, shell=True), ["b'", "'", "n"]))
+
+				runFFMPEG(target, tempcodecFormat, tempaudioFormat, videoBitrate, audioBitrate, output, extraCommands, useFFMPEGBAR, useGPU)
+
+				if checkMediaHealth(target) == 0:
+					if os.path.exists(output): # checks for output file first
+						if str(containerFormat) in str(target): 
+							print("ignoring delete for", output) # if output format = input format, do not delete output file
+						else:
+							if removeOringalFile == 1: # respect user settings
+								if os.path.exists(target):
+									os.remove(target) # removes original file
+								if os.path.exists(deleteNFO):
+									if removeNFO == 1:
+										os.remove(deleteNFO) # deletes the nfo file
 				else:
-					print("[CONVERTING] using ffmpeg only")
-					print("[CONVERTING] please wait, script might look non-responsive for large file")
-					command = "ffmpeg -i '" + target + "' " + "-c:v " + tempcodecFormat + " " + extraCommands + " -c:a " + tempaudioFormat + " -preset " + preset +" -y -b:v " + videoBitrate +" -b:a " + audioBitrate + " '" + output + "' -loglevel 8"
-				os.system(command) # run command into system
-				if os.path.exists(output): # checks for output file first
-					if str(containerFormat) in str(target): 
-						print("ignoring delete for", output) # if output format = input format, do not delete output file
-					else:
-						if removeOringalFile == 1: # respect user settings
-							if os.path.exists(target):
-								os.remove(target) # removes original file
-						if os.path.exists(deleteNFO):
-							if removeNFO == 1:
-								os.remove(deleteNFO) # deletes the nfo file
+					print("[WARNING] output file is invalid!")
+					print("[WARNING] proceeding to remove output file")
+					os.remove(output)
 			else:
-				print("[NOTICE] ignored file", doneCount + 1, "of", fileCount,"as requirements has already been met")
-				renameSpecific(target, ".input", "")
+				if checkMediaHealth(x) == 1:
+					print("[NOTICE] ignored file", doneCount + 1, "of", fileCount,"as requirements has already been met")
+					doneCount -= 1
+					renameSpecific(target, ".input", "")
 
 	doneCount += 1
 
@@ -226,7 +266,7 @@ for x in targetFiles:
 	commandCheckVideo = "ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 '" + x +"'"
 	commandCheckAudio = "ffprobe -v error -select_streams a:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 '" + x +"'"
 	commandCheckSub = "ffmpeg -i '" + x + "' -c copy -map 0:s -f null - -v 0 -hide_banner && echo $? || echo $?"
-	if codecFormat in str(subprocess.check_output(commandCheckVideo, shell=True)) and audioFormat in str(subprocess.check_output(commandCheckAudio, shell=True)) and str(containerFormat) in str(x):
+	if codecFormat in str(subprocess.check_output(commandCheckVideo, shell=True)) and audioFormat in str(subprocess.check_output(commandCheckAudio, shell=True)) and str(containerFormat) in str(x) and checkMediaHealth(x) == 0:
 		successCount += 1
 	else:
 		if removeOringalFile == 1:
@@ -236,6 +276,6 @@ if not fileCount == 0:
 	print("[RESULT]", successCount, "file(s) verified")
 	if removeOringalFile == 1:
 		print("[RESULT]", failCount, "file(s) failed")
-	print("[RESULT]", doneCount, "file(s) processed")
+	print("[RESULT]", doneCount, "file(s) converted")
 print("[END] job done")
 
