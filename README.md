@@ -35,7 +35,7 @@ sudo npm install --global ffmpeg-progressbar-cli
 - Extract to directory that you want to concert
 - And run the following command
 ```
-python3 convert.py
+sudo python3 convert.py
 ```
 
 # Features
