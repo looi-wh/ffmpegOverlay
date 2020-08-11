@@ -8,7 +8,7 @@ sudo apt-get update
 ```
 Install ffmpeg, mediainfo, nodejs, npm and some stuff
 ```
-sudo apt install -y ffmpeg mediainfo nodejs npm libva-dev libva-utils
+sudo apt install -y ffmpeg mediainfo nodejs npm libx264-dev autoconf automake build-essential libass-dev libtool pkg-config texinfo zlib1g-dev libva-dev cmake mercurial libdrm-dev libvorbis-dev libogg-dev git libx11-dev libperl-dev libpciaccess-dev libpciaccess0 xorg-dev
 ```
 Install ffmpeg-bar
 ```
