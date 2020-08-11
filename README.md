@@ -38,6 +38,32 @@ sudo npm install --global ffmpeg-progressbar-cli
 sudo python3 convert.py
 ```
 
+# Enabling H264 VAAPI GPU support
+Make sure you can use H264 VAAPI first by running
+```
+sudo vainfo | grep H264
+```
+If output contains something like this, you are good to go
+```
+libva info: va_openDriver() returns 0
+      VAProfileH264ConstrainedBaseline:	VAEntrypointVLD
+      VAProfileH264ConstrainedBaseline:	VAEntrypointEncSlice
+      VAProfileH264Main               :	VAEntrypointVLD
+      VAProfileH264Main               :	VAEntrypointEncSlice
+      VAProfileH264High               :	VAEntrypointVLD
+      VAProfileH264High               :	VAEntrypointEncSlice
+      VAProfileH264MultiviewHigh      :	VAEntrypointVLD
+      VAProfileH264MultiviewHigh      :	VAEntrypointEncSlice
+      VAProfileH264StereoHigh         :	VAEntrypointVLD
+      VAProfileH264StereoHigh         :	VAEntrypointEncSlice
+```
+- Edit the python script
+- Find a line called useGPU = 0
+- Change it to useGPU = 1
+- Audio and Subtitles will automatically be transconded
+- Script will process twice; once to transcode video using gpu, another to transcode audio with cpu
+- Unless you know what you are doing, try using only the default values
+
 # Features
 - Supports FFMPEG-BAR
 - Able to find any media file recursively
@@ -58,6 +84,8 @@ sudo python3 convert.py
 # Notes
 - Edit and find the section for the settings first (make sure its what you want)
 - Please ensure read and write permission is done properly
+- Only change the settings/code if you know what you are doing!
+- VAAPI GPU support requires VAAPI hardware acceleration setup correctly!
 - V9 and H265 conversion is not recommended as it takes too long to convert
 - Containers other than mp4, mov and mkv might have buggy subtitles that doesnt work
 - The default settings is optimized for video streaming
