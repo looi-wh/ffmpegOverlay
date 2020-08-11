@@ -30,9 +30,13 @@ sudo npm install --global ffmpeg-progressbar-cli
 ```
 
 # How to run
-- Install ffmpeg-progressbar-cli, ffmpeg and media-info
+- Make sure you have ffmpeg-progressbar-cli, ffmpeg and media-info
 - Download file from release section
-- Extract and run "python3 convert.py" (no need for sudo)
+- Extract to directory that you want to concert
+- And run the following command
+```
+python3 convert.py
+```
 
 # Features
 - Supports FFMPEG-BAR
