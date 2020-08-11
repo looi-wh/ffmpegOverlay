@@ -137,17 +137,18 @@ def runFFMPEG(inputx, vcodec, acodec, vbit, abit, outputx, extraCommands, bar, g
 		else:
 			print("[WARNING - GPU] unable to find -map 0:a in extraCommands! adding it..")
 			extraCommands = extraCommands + " -map 1:a"
+		if "-map '0:s?'" in extraCommands:
+			extraCommands = extraCommands.replace("-map '0:s?'", "-map '1:s?'")
+		else:
+			print("[WARNING - GPU] unable to find -map '0:s?' in extraCommands! adding it..")
+			extraCommands = extraCommands + " -map '1:s?'"
 		commandx = mainCommandx + " -i '" + inputxVid + "' -i '" + inputx + "' " + extraCommands + " -c copy '" + outputx + "'"
 		print("")
 		print("[INFO] processing audio and subtitles without GPU")
 		os.system(commandx) # merge original audio with created video
-		if not os.path.exists(ouputx):
-			print("[FATAL - GPU] final output not created, unable to merge audio with video")
-			print(commandx)
-			exit()
-		else:
-			os.remove(outputVid)
+		os.remove(outputVid)
 	else:
+		print("[INFO] converting using cpu")
 		mainCommand = mainCommandx + " -i '" + inputx + "' -preset: " + preset + " -c:v " + vcodec + " -c:a " + acodec + " -y -b:v " + vbit + " -b:a " + abit + " " + extraCommands + " '" + output + "' "
 		os.system(mainCommand)
 
