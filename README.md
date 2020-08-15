@@ -98,3 +98,4 @@ libva info: va_openDriver() returns 0
 # Screenshot(s)
 example of ffmpegOverlay using ffmpeg-bar
 ![work](/Images/Screenshot2.png)
+- Notice that the script automatically changes the tempoutput to "copy". It will do the same for video too, meaning the speed of transcoding can be improved!
