@@ -21,7 +21,7 @@ containerFormat = ".mp4" # file extension (rmb to put the dot)
 codecFormat = "h264" # video format (refrain from using copy)
 audioFormat = "aac" # audio format (refrain from using copy)
 preset = "veryfast" # recommended: veryfast (a balance between quality and speed)
-videoBitrate = "8M" # recommended: 8M (can be viewed as mbps)
+videoBitrate = "6M" # recommended: 6M (can be viewed as mbps)
 audioBitrate = "320k" # recommended: 192k (normal quality, change to 320k for highest)
 # END OF SETTINGS
 
@@ -29,13 +29,14 @@ audioBitrate = "320k" # recommended: 192k (normal quality, change to 320k for hi
 # note: 1 for enable, 0 for disable
 #		this settings is more for jellyfin only
 cwd = os.getcwd() # current working directory, replace os.getcwd() to somewhere you would like
-removeNFO = 1 # removes the original nfo file
+removeNFO = 0 # removes the original nfo file
 removeOringalFile = 0 # removes the original media file
 showFiles = 1 # display the files before startings
 useFFMPEGBAR = 1 # uses ffmpeg-bar instead PLEASE HAVE THIS INSTALLED
 illegalChar = ["'", '"'] # characters to remove from file name
 useGPU = 0  # currently only vaapi support is written
 render = "-hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -hwaccel_output_format vaapi"
+gpuSupported = ["mpeg2", "h264", "vc1", "jpeg"] # run vainfo and fill in the supported codecs
 gpucommand = "-an -sn" # can ignore if u not using
 extraCommands = "-map 0:v:0 -map 0:a" # important stuff
 # 				^ maps video and audio(all). quality = 20 (higher than average)
@@ -107,7 +108,7 @@ def checkMediaHealth(file):
 	return int(subprocess.check_output("ffprobe '" + file + "' > /dev/null 2>&1; echo $?", shell=True))
 
 def runFFMPEG(inputx, vcodec, acodec, vbit, abit, outputx, extraCommands, bar, gpu):
-	global preset, gpucommand, render, containerFormat
+	global preset, gpucommand, render, containerFormat, gpuSupported
 	if bar == 1:
 		mainCommandx = "ffmpeg-bar"
 	else:
@@ -117,14 +118,19 @@ def runFFMPEG(inputx, vcodec, acodec, vbit, abit, outputx, extraCommands, bar, g
 		vcodecGPU = 0
 	else:
 		vcodecGPU = 1
-	if gpu == 1 and vcodecGPU == 1:  # run with gpu
+	commandCheckVideo = "ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 '" + target +"'"
+	gpuSP = 0
+	for x in gpuSupported:
+		if x in str(subprocess.check_output(commandCheckVideo, shell=True)):
+			gpuSP = 1
+	if gpu == 1 and vcodecGPU == 1 and gpuSP == 1:  # run with gpu
 		# How this GPU transcoding works
 		# this script takes the input file and create an output with only video
 		# then takes the input file and merge with the created video file
 		mainCommand = mainCommandx + " " + render
 		outputVid = outputx.replace(containerFormat, "_INPUT" + containerFormat)
 		inputxVid = outputVid
-		vcodecx = "vcodec" + "_vaapi"
+		vcodecx = vcodec + "_vaapi"
 		print("[INFO] processing video first with GPU")
 		commandv = mainCommand + " -i '" + inputx + "' " + gpucommand + " -c:v " + vcodecx + " -y -b:v " + vbit + " '" + outputVid + "' "
 		os.system(commandv) # creates a file without audio and subtitles
@@ -229,9 +235,9 @@ for target in targetFiles:
 				print("[CONVERTING] output to", output)
 				print("[CONVERTING] processing file", doneCount+1, "of", fileCount)
 				print("[DETAILS] original video codec:", filterArray(subprocess.check_output(commandCheckVideo, shell=True), ["b'", "'", "n"]))
+				print("[DETAILS] original audio codec:", filterArray(subprocess.check_output(commandCheckAudio, shell=True), ["b'", "'", "n"]))
 				print("[DEBUG] tempcodecFormat (video):", tempcodecFormat)
 				print("[DEBUG] tempaudioFormat (audio):", tempaudioFormat)
-				print("[DETAILS] original audio codec:", filterArray(subprocess.check_output(commandCheckAudio, shell=True), ["b'", "'", "n"]))
 
 				runFFMPEG(target, tempcodecFormat, tempaudioFormat, videoBitrate, audioBitrate, output, extraCommands, useFFMPEGBAR, useGPU)
 
