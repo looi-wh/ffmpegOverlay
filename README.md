@@ -39,9 +39,9 @@ sudo python3 convert.py
 ```
 
 # Enabling H264 VAAPI GPU support
-Make sure you can use H264 VAAPI first by running
+Make sure you can at least use H264 VAAPI first by running
 ```
-sudo vainfo | grep H264
+sudo vainfo
 ```
 If output contains something like this, you are good to go
 ```
@@ -60,6 +60,8 @@ libva info: va_openDriver() returns 0
 - Edit the python script
 - Find a line called useGPU = 0
 - Change it to useGPU = 1
+- Find another line called gpuSupported = ["mpeg2", "h264", "vc1", "jpeg"]
+- Change it to whatever profile exists inside vainfo (script will only transcode when original media is one of these)
 - Audio and Subtitles will automatically be transconded
 - Script will process twice; once to transcode video using gpu, another to transcode audio with cpu
 - Script will only try to process video only for gpu transcoding
