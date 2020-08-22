@@ -1,5 +1,6 @@
 # ffmpegOverlay
 Designed to help convert large amount of media easily
+Note: Will be simplifying this work soon..
 
 # Installing on Ubuntu/Debian
 Apt update
