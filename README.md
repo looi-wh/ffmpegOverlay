@@ -13,4 +13,4 @@ This project contains tools that aims to help with my media server.
 - ffsubsync (For fixSubs.py only - uses another github project)
 
 # Extra information
-All of the tools that are written here is based on the foundation release that i have written quite awhile before. If there is any issues about how the script finds media file, please send a pm to me immediately.
+All of the tools that are written here is based on the foundation release that i have written quite awhile before. If there is any issues about how the script works, please send a pm to me immediately or open an issue in github
