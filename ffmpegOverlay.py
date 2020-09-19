@@ -67,8 +67,8 @@ def runFFMPEG(inputname, outputname, videoc, audioc, channels): # runs ffmpeg [c
 	os.system(command) # runs the command
 	return 0
 
-def runFFPROBE(mediaName): # runs ffmpeg [configure your ffmpeg here]
-	global videotarget, audiotarget, audiochannelstTarget, videocTEMP, audiocTEMP
+def runFFPROBE(mediaName, codecsx): # runs ffmpeg [configure your ffmpeg here]
+	global videotarget, audiotarget, audiochannelstTarget, videocTEMP, audiocTEMP, targetContainer
 	currentVideoCodec = str(subprocess.check_output("ffprobe '" + target + "' 2>&1 >/dev/null |grep Stream.*Video | sed -e 's/.*Video: //' -e 's/[, ].*//'", shell = True))
 	currentAudioCodec = str(subprocess.check_output("ffprobe '" + target + "' 2>&1 >/dev/null |grep Stream.*Audio | sed -e 's/.*Audio: //' -e 's/[, ].*//'", shell=True))
 	try:
@@ -82,7 +82,7 @@ def runFFPROBE(mediaName): # runs ffmpeg [configure your ffmpeg here]
 	if audiotarget in currentAudioCodec and str(audiochannelstTarget) in str(currentAudioChannels):
 		audiocTEMP = "copy"
 		skip += 1
-	if codecs in targetContainer:
+	if codecsx == targetContainer:
 		skip += 1
 	if not skip == 3:
 		return 1
@@ -92,6 +92,7 @@ def runFFPROBE(mediaName): # runs ffmpeg [configure your ffmpeg here]
 print("started")
 targetFiles = findFiles(arrayOfExtentions, cwd) # search for targets
 print(len(targetFiles), "targets found")
+print("script might look unresponsive but it is actively checking and converting files quietly")
 for target in targetFiles: # recursive scrap thru all files in searched list
 	for codecs in arrayOfExtentions: # helps with determining the codecs
 		if not target.count(codecs) == 0: # prevent works on external
@@ -100,20 +101,13 @@ for target in targetFiles: # recursive scrap thru all files in searched list
 				videocTEMP = str(videotarget)
 				audiocTEMP = str(audiotarget)
 				try:
-					if runFFPROBE(target) == 1:
-						print("working on", targetZero)
+					if runFFPROBE(target, codecs) == 1:
 						if targetContainer in str(target): # check if output filename will clash with input filename
 							target = target.replace(codecs, str(".input") + str(codecs)) # new target filename
 							os.rename(targetZero, target) # renames the file
-							targetNameChanged = 1 # prevents target name from mixing with output name
-							output = targetZero.replace(codecs, targetContainer)
-						print("input file:", target)
-						print("output file:", output)
-						print("video pass:", videocTEMP)
-						print("audio pass:", audiocTEMP)
-						print("audio channels:", audiochannelstTarget)
+						output = targetZero.replace(codecs, targetContainer)
 						runFFMPEG(target, output, videocTEMP, audiocTEMP, audiochannelstTarget)
-						print(targetZero, "completed")
+						print(targetZero, "completed successfully")
 						if removeOringalFile == 1: # removes original file
 							os.remove(target)
 				except:
