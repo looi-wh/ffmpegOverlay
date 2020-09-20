@@ -86,14 +86,8 @@ def runFFPROBE(mediaName, codecsx):
 		skip += 1
 	if str(codecsx) == str(targetContainer):
 		skip += 1
-	else:
-		print("codecsx:", codecsx)
-		print("targetContainer:", targetContainer)
 	if currentSubtitleCheck == 1 and removeSubtitles == 1: # 0 means found, 1 means not found
 		skip += 1
-	else:
-		print("subtitles is detected")
-		print("currentSubtitleCheck:", currentSubtitleCheck)
 	if skip == 4 and int(removeSubtitles) == 1:
 		return 0
 	elif skip == 3 and int(removeSubtitles) == 0:
