@@ -8,7 +8,10 @@ This project contains tools that was created to help with my media server.
 - fixSubs.py (Uses ffsubsync to fix out-of-sync subtitles, complicated and not recommended)
 
 # Features (ffmpegOverlay)
-- 
+- Easily configurable
+- Automatically detect which stream can be copied and which needs to be converted
+- Automatically detect if subtitles exists and will remove it if enabled
+- Automatically skip media if it passes the requirements set by the script
 
 # Requirements
 - FFMPEG (All scripts are tested on ffmpeg version 4.2.4-1ubuntu0.1)
