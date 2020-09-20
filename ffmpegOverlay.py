@@ -28,7 +28,7 @@ import glob
 
 arrayOfExtentions = [".avi", ".mkv", ".mov", ".mp4", ".wmv", ".flv", ".webm"] # which file extension to search for
 cwd = os.getcwd() # sets current location
-removeOringalFile = 1 # delete original files after writing the output files
+removeOringalFile = 0 # delete original files after writing the output files
 targetContainer = ".mp4" # set target contatiner [IMPORTANT]
 videotarget = "h264" # video codec
 audiotarget = "aac" # audio codec
@@ -84,15 +84,23 @@ def runFFPROBE(mediaName, codecsx):
 	if audiotarget in currentAudioCodec and int(audiochannelstTarget) == int(currentAudioChannels):
 		audiocTEMP = "copy"
 		skip += 1
-	if codecsx == targetContainer:
+	if str(codecsx) == str(targetContainer):
 		skip += 1
-	if currentSubtitleCheck == 0 and removeSubtitles == 1:
+	else:
+		print("codecsx:", codecsx)
+		print("targetContainer:", targetContainer)
+	if currentSubtitleCheck == 1 and removeSubtitles == 1: # 0 means found, 1 means not found
 		skip += 1
-	if not skip == 4 and removeSubtitles == 1:
+	else:
+		print("subtitles is detected")
+		print("currentSubtitleCheck:", currentSubtitleCheck)
+	if skip == 4 and int(removeSubtitles) == 1:
+		return 0
+	elif skip == 3 and int(removeSubtitles) == 0:
+		return 0
+	else:
 		return 1
-	elif not skip == 3 and removeSubtitles == 0:
-		return 1
-	return 0
+	return 1
 
 # brain of operations
 print("started")
