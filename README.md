@@ -7,11 +7,19 @@ This project contains tools that was created to help with my media server.
 - extractSubs.py (output subtitles in .srt with ".english.default" written to filename)
 - fixSubs.py (Uses ffsubsync to fix out-of-sync subtitles, complicated and not recommended)
 
+# Features (ffmpegOverlay)
+- 
+
 # Requirements
 - FFMPEG (All scripts are tested on ffmpeg version 4.2.4-1ubuntu0.1)
 - FFPROBE (Recommended)
 - Python3 (All the scripts here are powered by python3)
 - ffsubsync (For fixSubs.py only - uses another github project)
+
+# Warnings
+- Even when removeSubtitles is disabled, anything the script touches will still have their subtitles removed
+- Forcing the script to stop halfway might result in files being deleted!!
+- It might take a long time for conversion, so please run the script inside a screen if applicable
 
 # How to run
 1. Edit the script settings (Default is .mp4, h264 and aac)
