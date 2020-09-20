@@ -30,9 +30,10 @@ arrayOfExtentions = [".avi", ".mkv", ".mov", ".mp4", ".wmv", ".flv", ".webm"] # 
 cwd = os.getcwd() # sets current location
 removeOringalFile = 1 # delete original files after writing the output files
 targetContainer = ".mp4" # set target contatiner [IMPORTANT]
-videotarget = "h264"
-audiotarget = "aac"
+videotarget = "h264" # video codec
+audiotarget = "aac" # audio codec
 audiochannelstTarget = 2
+removeSubtitles = 1
 
 def findFiles(arrayOfNames, workingDir): # file files in a given directory
 	filtered = []
@@ -67,32 +68,38 @@ def runFFMPEG(inputname, outputname, videoc, audioc, channels): # runs ffmpeg [c
 	os.system(command) # runs the command
 	return 0
 
-def runFFPROBE(mediaName, codecsx): # runs ffmpeg [configure your ffmpeg here]
-	global videotarget, audiotarget, audiochannelstTarget, videocTEMP, audiocTEMP, targetContainer
+def runFFPROBE(mediaName, codecsx): 
+	global videotarget, audiotarget, audiochannelstTarget, videocTEMP, audiocTEMP, targetContainer, removeSubtitles
 	currentVideoCodec = str(subprocess.check_output("ffprobe '" + target + "' 2>&1 >/dev/null |grep Stream.*Video | sed -e 's/.*Video: //' -e 's/[, ].*//'", shell = True))
 	currentAudioCodec = str(subprocess.check_output("ffprobe '" + target + "' 2>&1 >/dev/null |grep Stream.*Audio | sed -e 's/.*Audio: //' -e 's/[, ].*//'", shell=True))
+	currentSubtitleCheck = int(subprocess.check_output("ffmpeg -i '" + target + "' -c copy -map 0:s -f null - -v 0 -hide_banner && echo $? || echo $?", shell=True))
 	try:
-		currentAudioChannels = str(subprocess.check_output("ffprobe -i '" + target + "' -show_entries stream=channels -select_streams a:0 -of compact=p=0:nk=1 -v 0", shell = True))
+		currentAudioChannels = int(subprocess.check_output("ffprobe -i '" + target + "' -show_entries stream=channels -select_streams a:0 -of compact=p=0:nk=1 -v 0", shell = True))
 	except:
-		currentAudioChannels = 2
+		currentAudioChannels = 0 # Converts anyways
 	skip = 0
 	if videotarget in currentVideoCodec:
 		videocTEMP = "copy"
 		skip += 1
-	if audiotarget in currentAudioCodec and str(audiochannelstTarget) in str(currentAudioChannels):
+	if audiotarget in currentAudioCodec and int(audiochannelstTarget) == int(currentAudioChannels):
 		audiocTEMP = "copy"
 		skip += 1
 	if codecsx == targetContainer:
 		skip += 1
-	if not skip == 3:
+	if currentSubtitleCheck == 0 and removeSubtitles == 1:
+		skip += 1
+	if not skip == 4 and removeSubtitles == 1:
+		return 1
+	elif not skip == 3 and removeSubtitles == 0:
 		return 1
 	return 0
 
 # brain of operations
 print("started")
 targetFiles = findFiles(arrayOfExtentions, cwd) # search for targets
-print(len(targetFiles), "targets found")
+print(len(targetFiles), "potential targets found")
 print("script might look unresponsive but it is actively checking and converting files quietly")
+print("Use HTOP to view the running command")
 for target in targetFiles: # recursive scrap thru all files in searched list
 	for codecs in arrayOfExtentions: # helps with determining the codecs
 		if not target.count(codecs) == 0: # prevent works on external
@@ -110,6 +117,8 @@ for target in targetFiles: # recursive scrap thru all files in searched list
 						print(targetZero, "completed successfully")
 						if removeOringalFile == 1: # removes original file
 							os.remove(target)
+					else:
+						print(targetZero, "passed")
 				except:
 					print(targetZero, "is ignored as an error has occured")
 
