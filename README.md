@@ -1,5 +1,6 @@
-# ffmpegOverlay
+# ffmpegOverlay [Planning to rework everything soon]
 This project contains tools that was created to help with my media server.
+
 
 # Tools included
 - ffmpegOverlay.py (Uses ffmpeg to convert everything in a local/current directory)
