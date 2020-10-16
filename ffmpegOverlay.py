@@ -28,7 +28,7 @@ import glob
 
 arrayOfExtentions = [".avi", ".mkv", ".mov", ".mp4", ".wmv", ".flv", ".webm"] # which file extension to search for
 cwd = os.getcwd() # sets current location
-removeOringalFile = 0 # delete original files after writing the output files
+removeOringalFile = 1 # delete original files after writing the output files
 targetContainer = ".mp4" # set target contatiner [IMPORTANT]
 videotarget = "h264" # video codec
 audiotarget = "aac" # audio codec
@@ -64,7 +64,7 @@ def runFFMPEG(inputname, outputname, videoc, audioc, channels): # runs ffmpeg [c
 	# faststart, profile main
 	# -map '0:s?' -c:s mov_text 
 	# command = "ffmpeg -i '" + inputname + "' -preset veryfast -c:v copy -c:a copy -y -map 0:v:0 -map 0:a -movflags +faststart -ac 2 -map '0:s?' -c:s mov_text '" + outputname + "' "
-	command = "ffmpeg -i '" + inputname + "' -preset veryfast -c:v " + videoc +" -c:a " + audioc +" -hide_banner -loglevel panic -movflags +faststart -ac " + str(channels) + " '" + outputname + "' "
+	command = "ffmpeg -i '" + inputname + "' -preset veryfast -c:v " + videoc +" -c:a " + audioc +" -pix_fmt -map 0:v:0 -map 0:a:0 -hide_banner -loglevel panic -movflags +faststart -ac " + str(channels) + " '" + outputname + "' "
 	os.system(command) # runs the command
 	return 0
 
