@@ -48,14 +48,14 @@ def findFiles(arrayOfNames, workingDir): # file files in a given directory
 		combinedFiltered = combineArray(filtered)
 	return combinedFiltered
 
-def combineArray(input): # converts two dimension array to one dimension
+def combineArray(input): # converts two dimension array to one dimension [mainly for findFiles function]
 	combine = []
 	for x in input:
 		for y in x:
 			combine.append(y)
 	return combine
 
-def runFFMPEG(inputname, outputname, videoc, audioc, channels): # runs ffmpeg [configure your ffmpeg here]
+def runFFMPEG(inputname, outputname, videoc, audioc, channels): # runs ffmpeg [configure your custom ffmpeg commands here]
 	# the defaults are configured for:
 	# made for maximum jellyfin compatibility
 	# h264	(4M - 1920x1080 max)
@@ -64,7 +64,7 @@ def runFFMPEG(inputname, outputname, videoc, audioc, channels): # runs ffmpeg [c
 	# faststart, profile main
 	# -map '0:s?' -c:s mov_text 
 	# command = "ffmpeg -i '" + inputname + "' -preset veryfast -c:v copy -c:a copy -y -map 0:v:0 -map 0:a -movflags +faststart -ac 2 -map '0:s?' -c:s mov_text '" + outputname + "' "
-	command = "ffmpeg -i '" + inputname + "' -preset veryfast -c:v " + videoc +" -c:a " + audioc +" -pix_fmt -map 0:v:0 -map 0:a:0 -hide_banner -loglevel panic -movflags +faststart -ac " + str(channels) + " '" + outputname + "' "
+	command = "ffmpeg -i '" + inputname + "' -preset veryfast -c:v " + videoc +" -c:a " + audioc +" -pix_fmt yuv420p -map 0:v:0 -map 0:a:0 -hide_banner -loglevel panic -movflags +faststart -ac " + str(channels) + " '" + outputname + "' "
 	os.system(command) # runs the command
 	return 0
 
