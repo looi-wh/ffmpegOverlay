@@ -1,4 +1,4 @@
-# ffmpegOverlay [Planning to rework everything soon]
+# ffmpegOverlay
 This project contains tools that was created to help with my media server.
 
 
