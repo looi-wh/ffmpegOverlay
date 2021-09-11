@@ -1,4 +1,5 @@
 # ffmpegOverlay
+[NOTICE] This project has been stopped for a good period of time to focus on the newer version of ffmpegOverlay2
 This project contains tools that was created to help with my media server.
 
 
